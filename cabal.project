@@ -1,5 +1,5 @@
 packages:
-  .
+  machines-frp/
   moore-mud/
 
 source-repository-package

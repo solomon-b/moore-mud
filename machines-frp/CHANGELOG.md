@@ -18,6 +18,8 @@
 - `moore-mud` package:
   - `MUD.World.Chat`: chat subsystem Moore coalgebra (Say, Whisper, Shout) with bounded message log
   - `MUD.Agent.Repl`: single-player REPL Mealy agent for testing
+  - `MUD.Agent.Player`: networked player Mealy agent — harvests commands from TVar mailboxes, sends observations to sockets, blocks via STM retry until input arrives
   - `MUD.Network`: TCP accept loop, per-player TVar mailboxes, connection registry with connect/disconnect events
   - `moore-mud-repl` executable: end-to-end chat REPL via `annihilateWithClock`
+  - `moore-mud-server` executable: TCP chat server on port 4000
 - Nix flake: `nix build`, `nix run`, and dev shell for both packages

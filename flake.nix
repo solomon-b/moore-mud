@@ -46,8 +46,8 @@
                     sha256 = "sha256-HfIMuU9yBp0JtN/ONOFku1wItbGLJl09fhaFzyiNVMg=";
                   })
                   { };
-              machines-frp = hfinal.callCabal2nix "machines-frp" self { };
-              moore-mud = hfinal.callCabal2nix "moore-mud" "${self}/moore-mud" { };
+              machines-frp = hfinal.callCabal2nix "machines-frp" ./machines-frp/. { };
+              moore-mud = hfinal.callCabal2nix "moore-mud" ./moore-mud/. { };
             };
           };
 
@@ -76,9 +76,15 @@
           default = hsPkgs.moore-mud;
         };
 
-        apps.default = flake-utils.lib.mkApp {
-          drv = hsPkgs.moore-mud;
-          name = "moore-mud-repl";
+        apps = {
+          default = flake-utils.lib.mkApp {
+            drv = hsPkgs.moore-mud;
+            name = "moore-mud-server";
+          };
+          repl = flake-utils.lib.mkApp {
+            drv = hsPkgs.moore-mud;
+            name = "moore-mud-repl";
+          };
         };
       }
     );
