@@ -44,11 +44,16 @@ library
   hs-source-dirs:  src
   exposed-modules:
     MUD.Agent.Repl
+    MUD.Network
     MUD.World.Chat
 
   build-depends:
     , base           >=4.9 && <5
+    , bytestring
+    , containers
     , machines-frp
+    , network
+    , stm
     , text
 
 --------------------------------------------------------------------------------
