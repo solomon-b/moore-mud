@@ -19,3 +19,4 @@
   - `MUD.World.Chat`: chat subsystem Moore coalgebra (Say, Whisper, Shout) with bounded message log
   - `MUD.Agent.Repl`: single-player REPL Mealy agent for testing
   - `moore-mud-repl` executable: end-to-end chat REPL via `annihilateWithClock`
+- Nix flake: `nix build`, `nix run`, and dev shell for both packages

@@ -1,27 +1,85 @@
 {
-  description = "machines-frp — FRP on coalgebraic Moore/Mealy machines";
+  description = "moore-mud — a MUD engine on coalgebraic Moore/Mealy machines";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      hsPkgs = pkgs.haskell.packages.ghc98;
-    in
+  outputs =
     {
-      devShells.${system}.default = pkgs.mkShell {
-        nativeBuildInputs = [
-          hsPkgs.ghc
-          hsPkgs.cabal-install
-          hsPkgs.haskell-language-server
-          pkgs.ormolu
-          pkgs.hlint
-          pkgs.ghcid
-          pkgs.just
-        ];
-      };
-    };
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    let
+      ghcVersion = "98";
+      compiler = "ghc${ghcVersion}";
+    in
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        evalPkgs = import nixpkgs { system = "x86_64-linux"; };
+
+        mkHsPkgs =
+          compiler:
+          evalPkgs.haskell.packages.${compiler}.override {
+            overrides = hfinal: hprev: {
+              machines-coalgebras =
+                hfinal.callCabal2nix "machines-coalgebras"
+                  ("${
+                    pkgs.fetchFromGitHub {
+                      owner = "cofree-coffee";
+                      repo = "cofree-bot";
+                      rev = "e2693672507cc1278ccee7f9bb2037a44f7e9ea6";
+                      sha256 = "sha256-0baP8yvHNSGxqjMNmXthLhtjoFhJ3SP33Ft4CI2vTeg=";
+                    }
+                  }/machines-coalgebras")
+                  { };
+              monoidal-functors =
+                hfinal.callCabal2nix "monoidal-functors"
+                  (pkgs.fetchFromGitHub {
+                    owner = "solomon-b";
+                    repo = "monoidal-functors";
+                    rev = "e16e1bfbcfc19c8aadfc7bcf65c9e7de59d63b83";
+                    sha256 = "sha256-HfIMuU9yBp0JtN/ONOFku1wItbGLJl09fhaFzyiNVMg=";
+                  })
+                  { };
+              machines-frp = hfinal.callCabal2nix "machines-frp" self { };
+              moore-mud = hfinal.callCabal2nix "moore-mud" "${self}/moore-mud" { };
+            };
+          };
+
+        hsPkgs = mkHsPkgs compiler;
+      in
+      {
+        devShells.default = hsPkgs.shellFor {
+          packages = p: [
+            p.machines-frp
+            p.moore-mud
+          ];
+          buildInputs = [
+            pkgs.cabal-install
+            pkgs.haskell.compiler.${compiler}
+            pkgs.haskell.packages.${compiler}.haskell-language-server
+            pkgs.ormolu
+            pkgs.hlint
+            pkgs.ghcid
+            pkgs.just
+          ];
+        };
+
+        packages = {
+          machines-frp = hsPkgs.machines-frp;
+          moore-mud = hsPkgs.moore-mud;
+          default = hsPkgs.moore-mud;
+        };
+
+        apps.default = flake-utils.lib.mkApp {
+          drv = hsPkgs.moore-mud;
+          name = "moore-mud-repl";
+        };
+      }
+    );
 }
