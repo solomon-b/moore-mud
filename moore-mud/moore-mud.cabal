@@ -1,0 +1,63 @@
+cabal-version: 3.0
+name:          moore-mud
+version:       0.1.0.0
+synopsis:      A MUD engine built on coalgebraic Moore machines
+license:       MIT
+author:        Solomon Bothwell
+maintainer:    ssbothwell@gmail.com
+category:      Game
+
+--------------------------------------------------------------------------------
+
+common common-settings
+  default-language:   Haskell2010
+  default-extensions:
+    DeriveFunctor
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    ImportQualifiedPost
+    InstanceSigs
+    LambdaCase
+    MultiParamTypeClasses
+    OverloadedStrings
+    RankNTypes
+    ScopedTypeVariables
+    TupleSections
+    TypeApplications
+    TypeFamilies
+
+  ghc-options:
+    -Wall
+    -Wcpp-undef
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wpartial-fields
+    -Werror=missing-home-modules
+    -Wno-name-shadowing
+
+--------------------------------------------------------------------------------
+
+library
+  import:          common-settings
+  hs-source-dirs:  src
+  exposed-modules:
+    MUD.Agent.Repl
+    MUD.World.Chat
+
+  build-depends:
+    , base           >=4.9 && <5
+    , machines-frp
+    , text
+
+--------------------------------------------------------------------------------
+
+executable moore-mud-repl
+  import:          common-settings
+  hs-source-dirs:  app
+  main-is:         Main.hs
+  build-depends:
+    , base       >=4.9 && <5
+    , moore-mud
+    , machines-frp

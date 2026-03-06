@@ -1,4 +1,6 @@
-packages: .
+packages:
+  .
+  moore-mud/
 
 source-repository-package
   type: git

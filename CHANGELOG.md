@@ -15,3 +15,7 @@
   - `SlotKind`, `StateF`, `InputF`, `OutputF` interpretation functors
   - `SequenceMoore` typeclass with `Generic` default: collapse a record of Moore coalgebras into a single composite coalgebra
   - Adding a new subsystem is just adding a field to the HKD record
+- `moore-mud` package:
+  - `MUD.World.Chat`: chat subsystem Moore coalgebra (Say, Whisper, Shout) with bounded message log
+  - `MUD.Agent.Repl`: single-player REPL Mealy agent for testing
+  - `moore-mud-repl` executable: end-to-end chat REPL via `annihilateWithClock`
