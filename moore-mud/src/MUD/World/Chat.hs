@@ -25,11 +25,9 @@ where
 import Data.Functor.Identity (Identity (..))
 import Data.Machine.FRP.Core (MooreC, MooreTC (..))
 import Data.Text (Text)
+import MUD.Types (PlayerId (..))
 
 --------------------------------------------------------------------------------
-
--- | Opaque player identifier.
-type PlayerId = Int
 
 -- | A chat message with its origin and content.
 data ChatMsg

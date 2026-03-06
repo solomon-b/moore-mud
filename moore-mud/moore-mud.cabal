@@ -46,6 +46,7 @@ library
     MUD.Agent.Player
     MUD.Agent.Repl
     MUD.Network
+    MUD.Types
     MUD.World.Chat
 
   build-depends:

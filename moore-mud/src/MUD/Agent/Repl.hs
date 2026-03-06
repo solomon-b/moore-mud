@@ -10,6 +10,7 @@ import Control.Monad (forM_)
 import Data.Machine.FRP.Core (MealyT (..))
 import Data.Text (Text)
 import Data.Text qualified as Text
+import MUD.Types (PlayerId (..))
 import MUD.World.Chat (ChatCmd (..), ChatMsg (..), ChatOutput (..))
 import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
@@ -32,21 +33,19 @@ replAgent pid = MealyT $ \(ChatOutput msgs) -> do
       pure (Say pid (Text.pack line), replAgent pid)
     Just cmd -> pure (cmd, replAgent pid)
 
-type PlayerId = Int
-
 --------------------------------------------------------------------------------
 
 formatMsg :: ChatMsg -> String
-formatMsg (SayMsg pid txt) = "[say] player " <> show pid <> ": " <> Text.unpack txt
-formatMsg (WhisperMsg from to txt) = "[whisper] player " <> show from <> " -> " <> show to <> ": " <> Text.unpack txt
-formatMsg (ShoutMsg pid txt) = "[shout] player " <> show pid <> ": " <> Text.unpack txt
+formatMsg (SayMsg pid txt) = "[say] player " <> show (getPlayerId pid) <> ": " <> Text.unpack txt
+formatMsg (WhisperMsg from to txt) = "[whisper] player " <> show (getPlayerId from) <> " -> " <> show (getPlayerId to) <> ": " <> Text.unpack txt
+formatMsg (ShoutMsg pid txt) = "[shout] player " <> show (getPlayerId pid) <> ": " <> Text.unpack txt
 
 parseCmd :: PlayerId -> Text -> Maybe ChatCmd
 parseCmd pid input =
   case Text.words input of
     ("say" : rest) -> Just $ Say pid (Text.unwords rest)
     ("whisper" : tidTxt : rest)
-      | Just tid <- readMaybe (Text.unpack tidTxt) ->
+      | Just tid <- fmap PlayerId (readMaybe (Text.unpack tidTxt)) ->
           Just $ Whisper pid tid (Text.unwords rest)
     ("shout" : rest) -> Just $ Shout pid (Text.unwords rest)
     _ -> Nothing

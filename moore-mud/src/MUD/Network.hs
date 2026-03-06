@@ -62,12 +62,10 @@ import Network.Socket
     setSocketOption,
     withSocketsDo,
   )
+import MUD.Types (PlayerId (..))
 import Network.Socket.ByteString (recv, sendAll)
 
 --------------------------------------------------------------------------------
-
--- | Opaque player identifier.
-type PlayerId = Int
 
 -- | A live player connection.
 data Connection = Connection
@@ -96,7 +94,7 @@ newRegistry :: IO Registry
 newRegistry =
   Registry
     <$> newTVarIO Map.empty
-    <*> newTVarIO 0
+    <*> newTVarIO (PlayerId 0)
     <*> newTVarIO []
 
 -- | Drain all pending registry events.
@@ -142,7 +140,7 @@ acceptLoop reg port = withSocketsDo $ do
       atomically $ do
         modifyTVar' (regConnections reg) (Map.insert pid connection)
         modifyTVar' (regEvents reg) (PlayerConnected pid :)
-      sendToPlayer connection $ "Welcome! You are player " <> Text.pack (show pid)
+      sendToPlayer connection $ "Welcome! You are player " <> Text.pack (show (getPlayerId pid))
       void $
         forkFinally
           (playerThread clientSock mailbox)
@@ -166,7 +164,7 @@ openListenSocket addr = do
 allocPlayerId :: Registry -> STM PlayerId
 allocPlayerId reg = do
   pid <- readTVar (regNextId reg)
-  writeTVar (regNextId reg) (pid + 1)
+  writeTVar (regNextId reg) (PlayerId (getPlayerId pid + 1))
   pure pid
 
 -- | Per-player thread: read lines from the socket, write into the mailbox.

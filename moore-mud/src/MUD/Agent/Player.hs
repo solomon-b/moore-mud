@@ -19,12 +19,12 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import MUD.Network
   ( Connection,
-    PlayerId,
     Registry,
     connectedPlayers,
     harvestCommand,
     sendToPlayer,
   )
+import MUD.Types (PlayerId (..))
 import MUD.World.Chat (ChatCmd (..), ChatMsg (..), ChatOutput (..))
 import Text.Read (readMaybe)
 
@@ -61,16 +61,16 @@ awaitCommand reg = do
     [] -> retry
 
 formatMsg :: ChatMsg -> Text
-formatMsg (SayMsg pid txt) = "[say] player " <> Text.pack (show pid) <> ": " <> txt
-formatMsg (WhisperMsg from to txt) = "[whisper] player " <> Text.pack (show from) <> " -> " <> Text.pack (show to) <> ": " <> txt
-formatMsg (ShoutMsg pid txt) = "[shout] player " <> Text.pack (show pid) <> ": " <> txt
+formatMsg (SayMsg pid txt) = "[say] player " <> Text.pack (show (getPlayerId pid)) <> ": " <> txt
+formatMsg (WhisperMsg from to txt) = "[whisper] player " <> Text.pack (show (getPlayerId from)) <> " -> " <> Text.pack (show (getPlayerId to)) <> ": " <> txt
+formatMsg (ShoutMsg pid txt) = "[shout] player " <> Text.pack (show (getPlayerId pid)) <> ": " <> txt
 
 parseCmd :: PlayerId -> Text -> Maybe ChatCmd
 parseCmd pid input =
   case Text.words input of
     ("say" : rest) -> Just $ Say pid (Text.unwords rest)
     ("whisper" : tidTxt : rest)
-      | Just tid <- readMaybe (Text.unpack tidTxt) ->
+      | Just tid <- fmap PlayerId (readMaybe (Text.unpack tidTxt)) ->
           Just $ Whisper pid tid (Text.unwords rest)
     ("shout" : rest) -> Just $ Shout pid (Text.unwords rest)
     _ -> Nothing
