@@ -46,6 +46,7 @@
                     sha256 = "sha256-HfIMuU9yBp0JtN/ONOFku1wItbGLJl09fhaFzyiNVMg=";
                   })
                   { };
+              bidir-serializers = hfinal.callCabal2nix "bidir-serializers" ./bidir-serializers/. { };
               machines-frp = hfinal.callCabal2nix "machines-frp" ./machines-frp/. { };
               moore-mud = hfinal.callCabal2nix "moore-mud" ./moore-mud/. { };
             };
@@ -56,6 +57,7 @@
       {
         devShells.default = hsPkgs.shellFor {
           packages = p: [
+            p.bidir-serializers
             p.machines-frp
             p.moore-mud
           ];
@@ -71,6 +73,7 @@
         };
 
         packages = {
+          bidir-serializers = hsPkgs.bidir-serializers;
           machines-frp = hsPkgs.machines-frp;
           moore-mud = hsPkgs.moore-mud;
           default = hsPkgs.moore-mud;
