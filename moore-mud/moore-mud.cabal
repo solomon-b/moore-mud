@@ -46,12 +46,15 @@ library
     MUD.Agent.Player
     MUD.Agent.Repl
     MUD.Network
+    MUD.Serializer.Chat
+    MUD.Serializer.Nav
     MUD.Types
     MUD.World.Chat
     MUD.World.Nav
 
   build-depends:
-    , base           >=4.9 && <5
+    , base               >=4.9 && <5
+    , bidir-serializers
     , bytestring
     , containers
     , machines-frp
