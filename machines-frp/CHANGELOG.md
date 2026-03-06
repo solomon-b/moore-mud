@@ -26,3 +26,9 @@
   - `MUD.Types`: shared `PlayerId` newtype extracted from Chat/Network/Agent modules
   - `MUD.World.Nav`: navigation subsystem Moore coalgebra — rooms with descriptions, cardinal direction exits, player positions, movement, look
   - `moore-mud-nav-repl` executable: standalone navigation REPL for testing
+  - `MUD.Serializer.Chat`, `MUD.Serializer.Nav`: per-subsystem bidirectional text serializers
+  - Player agent now generic over world type via serializer factory
+  - Server wires Chat + Nav via `|*&*|` (Moore coalgebras) and `|*&|` (serializers) from monoidal-functors
+- `bidir-serializers` package:
+  - `Data.Serializer`: `Serializer` type, `TextSerializer` alias, `prefix` combinator
+  - `Bifunctor.Semigroupal` instance: `(,)` on printer, `These` on parser — serializers compose with `|*&|`
