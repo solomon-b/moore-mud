@@ -81,3 +81,16 @@ executable moore-mud-server
     , base       >=4.9 && <5
     , moore-mud
     , machines-frp
+
+--------------------------------------------------------------------------------
+
+executable moore-mud-nav-repl
+  import:          common-settings
+  hs-source-dirs:  app
+  main-is:         NavRepl.hs
+  build-depends:
+    , base       >=4.9 && <5
+    , containers
+    , moore-mud
+    , machines-frp
+    , text

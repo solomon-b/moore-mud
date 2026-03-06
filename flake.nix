@@ -85,6 +85,10 @@
             drv = hsPkgs.moore-mud;
             name = "moore-mud-repl";
           };
+          nav-repl = flake-utils.lib.mkApp {
+            drv = hsPkgs.moore-mud;
+            name = "moore-mud-nav-repl";
+          };
         };
       }
     );
