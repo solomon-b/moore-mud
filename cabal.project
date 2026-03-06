@@ -1,0 +1,12 @@
+packages: .
+
+source-repository-package
+  type: git
+  location: https://github.com/cofree-coffee/cofree-bot.git
+  tag: e2693672507cc1278ccee7f9bb2037a44f7e9ea6
+  subdir: machines-coalgebras
+
+source-repository-package
+  type: git
+  location: https://github.com/solomon-b/monoidal-functors.git
+  tag: e16e1bfbcfc19c8aadfc7bcf65c9e7de59d63b83

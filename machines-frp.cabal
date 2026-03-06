@@ -1,0 +1,55 @@
+cabal-version: 3.0
+name:          machines-frp
+version:       0.1.0.0
+synopsis:      A simple FRP system built on coalgebraic Moore and Mealy machines
+license:       MIT
+author:        Solomon Bothwell
+maintainer:    ssbothwell@gmail.com
+category:      FRP, finite-state-machines, coalgebras
+
+--------------------------------------------------------------------------------
+
+common common-settings
+  default-language:   Haskell2010
+  default-extensions:
+    DeriveFunctor
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    ImportQualifiedPost
+    InstanceSigs
+    LambdaCase
+    MultiParamTypeClasses
+    OverloadedStrings
+    RankNTypes
+    ScopedTypeVariables
+    TupleSections
+    TypeApplications
+    TypeFamilies
+
+  ghc-options:
+    -Wall
+    -Wcpp-undef
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wpartial-fields
+    -Werror=missing-home-modules
+    -Wno-name-shadowing
+
+--------------------------------------------------------------------------------
+
+library
+  import:          common-settings
+  hs-source-dirs:  src
+  exposed-modules:
+    Data.Machine.FRP.Core
+    Data.Machine.FRP.Driver
+    Data.Machine.FRP.HKD
+
+  build-depends:
+    , base                 >=4.9 && <5
+    , data-fix
+    , machines-coalgebras
+    , these
+    , time
