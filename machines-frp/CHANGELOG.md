@@ -23,3 +23,6 @@
   - `moore-mud-repl` executable: end-to-end chat REPL via `annihilateWithClock`
   - `moore-mud-server` executable: TCP chat server on port 4000
 - Nix flake: `nix build`, `nix run`, and dev shell for both packages
+  - `MUD.Types`: shared `PlayerId` newtype extracted from Chat/Network/Agent modules
+  - `MUD.World.Nav`: navigation subsystem Moore coalgebra — rooms with descriptions, cardinal direction exits, player positions, movement, look
+  - `moore-mud-nav-repl` executable: standalone navigation REPL for testing
