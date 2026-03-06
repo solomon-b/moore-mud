@@ -1,10 +1,11 @@
 -- | Player agent (Layer 2): a Mealy machine that mediates between
 -- the network layer and the world.
 --
--- Parameterized by a serializer factory so the agent is agnostic to
--- the world's command/observation types.
+-- Parameterized by a serializer factory and lifecycle callbacks so
+-- the agent is agnostic to the world's command/observation types.
 module MUD.Agent.Player
   ( playerAgent,
+    PlayerAgentConfig (..),
   )
 where
 
@@ -19,7 +20,9 @@ import Data.Text qualified as Text
 import MUD.Network
   ( Connection,
     Registry,
+    RegistryEvent (..),
     connectedPlayers,
+    drainEvents,
     harvestCommand,
     sendToPlayer,
   )
@@ -27,31 +30,47 @@ import MUD.Types (PlayerId (..))
 
 --------------------------------------------------------------------------------
 
+-- | Configuration for the player agent.
+data PlayerAgentConfig obs cmd = PlayerAgentConfig
+  { pacSerializer :: PlayerId -> TextSerializer obs cmd,
+    pacOnConnect :: PlayerId -> cmd,
+    pacOnDisconnect :: PlayerId -> cmd
+  }
+
 -- | A Mealy machine that bridges connected players and the world.
 --
--- The serializer factory produces a player-specific serializer (the
--- parser tags commands with the player's ID). The printer half is
--- the same for all players.
-playerAgent :: Registry -> (PlayerId -> TextSerializer obs cmd) -> MealyT IO obs cmd
-playerAgent reg mkSerializer = MealyT $ \obs -> do
+-- Each step:
+-- 1. Send the world's observation to all connected players.
+-- 2. Drain registry events — if a player connected/disconnected,
+--    emit the corresponding lifecycle command immediately.
+-- 3. Otherwise, block until a player has a pending command,
+--    parse it via the serializer, and emit it.
+playerAgent :: Registry -> PlayerAgentConfig obs cmd -> MealyT IO obs cmd
+playerAgent reg cfg = MealyT $ \obs -> do
   -- Format and send observation to all connected players
-  let formatted = printer (mkSerializer (PlayerId 0)) obs
+  let formatted = printer (pacSerializer cfg (PlayerId 0)) obs
   conns <- atomically $ connectedPlayers reg
   if Text.null formatted
     then pure ()
     else mapM_ (\conn -> sendToPlayer conn formatted) conns
 
-  -- Block until a player has a command, harvest it
-  (pid, txt, conn) <- atomically $ awaitCommand reg
+  -- Check for registry events (connect/disconnect)
+  events <- atomically $ drainEvents reg
+  case events of
+    (PlayerConnected pid : _) ->
+      pure (pacOnConnect cfg pid, playerAgent reg cfg)
+    (PlayerDisconnected pid : _) ->
+      pure (pacOnDisconnect cfg pid, playerAgent reg cfg)
+    _ -> do
+      -- No lifecycle events — wait for a player command
+      (pid, txt, conn) <- atomically $ awaitCommand reg
 
-  -- Parse with player-specific serializer
-  case parser (mkSerializer pid) txt of
-    Just cmd ->
-      pure (cmd, playerAgent reg mkSerializer)
-    Nothing -> do
-      sendToPlayer conn "Unknown command. Try: say <text> | shout <text> | look | move <dir>"
-      -- Bad parse — recurse to await another command
-      runMealyT (playerAgent reg mkSerializer) obs
+      case parser (pacSerializer cfg pid) txt of
+        Just cmd ->
+          pure (cmd, playerAgent reg cfg)
+        Nothing -> do
+          sendToPlayer conn "Unknown command. Try: say <text> | shout <text> | look | move <dir>"
+          runMealyT (playerAgent reg cfg) obs
 
 --------------------------------------------------------------------------------
 

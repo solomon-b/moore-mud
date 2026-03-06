@@ -8,12 +8,13 @@ import Data.Functor.Identity (runIdentity)
 import Data.Machine.FRP.Core (MooreT (..), fixMoore, hoistMooreT, loop)
 import Data.Machine.FRP.Driver (annihilateWithClock)
 import Data.Trifunctor.Monoidal ((|*&*|))
-import MUD.Agent.Player (playerAgent)
+import Data.These (These (..))
+import MUD.Agent.Player (PlayerAgentConfig (..), playerAgent)
 import MUD.Network (acceptLoop, newRegistry)
 import MUD.Serializer.Chat (chatSerializer)
 import MUD.Serializer.Nav (navSerializer)
 import MUD.World.Chat (chatMachine, initialChatState)
-import MUD.World.Nav (initialNavState, navMachine)
+import MUD.World.Nav (NavCmd (..), RoomId (..), initialNavState, navMachine)
 
 --------------------------------------------------------------------------------
 
@@ -27,8 +28,13 @@ main = do
   let worldMachine = chatMachine |*&*| navMachine
       initialState = (initialChatState, initialNavState)
       world = ignoreDTime . hoistMooreT (pure . runIdentity) $ fixMoore worldMachine initialState
-      serializer pid = chatSerializer pid |*&| navSerializer pid
-  loop $ annihilateWithClock world (playerAgent reg serializer)
+      cfg =
+        PlayerAgentConfig
+          { pacSerializer = \pid -> chatSerializer pid |*&| navSerializer pid,
+            pacOnConnect = \pid -> That (Enter pid (RoomId 0)),
+            pacOnDisconnect = \pid -> That (Leave pid)
+          }
+  loop $ annihilateWithClock world (playerAgent reg cfg)
 
 -- | Adapt a Moore machine to ignore elapsed time in its input.
 ignoreDTime :: (Functor m) => MooreT m i o -> MooreT m (Double, i) o

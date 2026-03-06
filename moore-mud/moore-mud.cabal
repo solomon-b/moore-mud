@@ -85,6 +85,7 @@ executable moore-mud-server
     , moore-mud
     , machines-frp
     , monoidal-functors
+    , these
 
 --------------------------------------------------------------------------------
 
