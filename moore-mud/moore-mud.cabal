@@ -48,6 +48,7 @@ library
     MUD.Network
     MUD.Types
     MUD.World.Chat
+    MUD.World.Nav
 
   build-depends:
     , base           >=4.9 && <5
