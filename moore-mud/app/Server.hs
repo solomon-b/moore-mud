@@ -3,12 +3,17 @@ module Main where
 --------------------------------------------------------------------------------
 
 import Control.Concurrent (forkIO)
+import Data.Bifunctor.Monoidal ((|*&|))
 import Data.Functor.Identity (runIdentity)
 import Data.Machine.FRP.Core (MooreT (..), fixMoore, hoistMooreT, loop)
 import Data.Machine.FRP.Driver (annihilateWithClock)
+import Data.Trifunctor.Monoidal ((|*&*|))
 import MUD.Agent.Player (playerAgent)
 import MUD.Network (acceptLoop, newRegistry)
+import MUD.Serializer.Chat (chatSerializer)
+import MUD.Serializer.Nav (navSerializer)
 import MUD.World.Chat (chatMachine, initialChatState)
+import MUD.World.Nav (initialNavState, navMachine)
 
 --------------------------------------------------------------------------------
 
@@ -18,8 +23,12 @@ main = do
   putStrLn $ "moore-mud starting on port " <> show port
   reg <- newRegistry
   _ <- forkIO $ acceptLoop reg port
-  let world = ignoreDTime . hoistMooreT (pure . runIdentity) $ fixMoore chatMachine initialChatState
-  loop $ annihilateWithClock world (playerAgent reg)
+
+  let worldMachine = chatMachine |*&*| navMachine
+      initialState = (initialChatState, initialNavState)
+      world = ignoreDTime . hoistMooreT (pure . runIdentity) $ fixMoore worldMachine initialState
+      serializer pid = chatSerializer pid |*&| navSerializer pid
+  loop $ annihilateWithClock world (playerAgent reg serializer)
 
 -- | Adapt a Moore machine to ignore elapsed time in its input.
 ignoreDTime :: (Functor m) => MooreT m i o -> MooreT m (Double, i) o

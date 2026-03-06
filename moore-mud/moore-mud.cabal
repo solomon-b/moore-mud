@@ -81,9 +81,10 @@ executable moore-mud-server
   main-is:         Server.hs
   ghc-options:     -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-    , base       >=4.9 && <5
+    , base               >=4.9 && <5
     , moore-mud
     , machines-frp
+    , monoidal-functors
 
 --------------------------------------------------------------------------------
 
